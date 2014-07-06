@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:tx="http://www.springframework.org/schema/tx" 
+ xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+ 
+ <!-- 다국어 지원을 위한 설정 브라우저의 AcceptHeader를 이용하여 다국어 설정을 지원한다. -->
+ <bean id="localeResolver" class="org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver"></bean>
+ 
+ <!-- 리소스 디렉토리 아래의 board.properties를 MessageSource에 포함시킨다. -->
+ <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+  <property name="basename">
+   <value>board</value>   
+  </property>
+ </bean>
+ 
+ <!-- Spring Framework 이내에서 예외가 발생한 경우 지정한 클래스(com.preludeb.sample.core.PreludebExceptionResolver)에서 처리한다. -->
+    <bean id="exceptionMapping" class="com.mini103.bbs.core.fingarExceptionResolver"></bean>
+    
+    <!-- 이하의 데이터베이스 관련 빈에서 사용할 jdbc.properties를 가져오는 빈 -->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">     
+     <property name="locations" value="classpath:jdbc.properties"/>     
+     <property name="fileEncoding" value="UTF-8"/> 
+    </bean>
+ 
+ <!-- Apache DBCP DataSource를 생성한다. 데이터베이스 관련 설정은 jdbc.properties를 따른다. -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driverClass}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+    
+    <!-- mybatis SqlSessionFactory 빈을 생성한다. mybatis에서 사용할 매퍼 XML의 경로를 설정한다. -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+     <property name="dataSource" ref="dataSource"/>
+     <property name="mapperLocations" value="classpath:com/preludeb/sample/mapper/-.xml"/>
+    </bean>
+    
+    <!-- SqlSession 빈을 생성한다. -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+     <constructor-arg index="0" ref="sqlSessionFactory"></constructor-arg>
+    </bean>
+    
+    <!-- 애플리케이션에서 사용할 Dao 빈을 등록한다. 각각의 Dao에 SqlSession을 주입한다. -->
+    <bean id="boardDao" class="com.mini103.bbs.dao.BoardDao">
+     <property name="sqlSession" ref="sqlSession"></property>
+    </bean>
+ 
+ <!-- 트랜잭션 매니저 빈을 생성한다. -->
+ <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+  <property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+    <!-- @Transactional등 트랜잭션 관련 애노테이션을 활성화 한다. -->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+    
+    <!-- 스케줄링에 사용할 클래스들을 빈으로 등록한다. -->
+    <bean id="scheduleTest" class="com.mini103.bbs.schedule.ScheduleTest">
+     <property name="boardDao" ref="boardDao"></property>
+    </bean>
+
+ <!-- Quartz 스케줄링에서 호출할 객체와 메서드를 등록한다. concurrent를 false로 하면 해당 job이 동시에 호출되지 않는다. -->
+    <bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+     <property name="targetObject" ref="scheduleTest"></property>
+     <property name="targetMethod" value="start"></property>
+     <property name="concurrent" value="false"></property>
+    </bean>
+    
+    <!-- 트리거를 등록한다. 아래 설정이면 Spring Framework가 등록된 후 10초 후에 Job이 시작되고 10초마다 Job이 반복실행된다. -->
+    <bean id="simpleTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+     <property name="jobDetail" ref="jobDetail"></property>     
+     <!-- 10초 딜레이 -->
+     <property name="startDelay" value="10000"></property>
+     <!-- 10초마다 반복 -->
+     <property name="repeatInterval" value="10000"></property>
+    </bean>
+    
+    <!-- 사용할 트리거들을 등록한다. -->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+  <property name="triggers">
+   <list>
+    <!-- 트리거 등록부분 임시로 주석처리 -->    
+    <!-- ref bean="simpleTrigger" /-->
+   </list>
+  </property>
+ </bean>
+  
+</beans>

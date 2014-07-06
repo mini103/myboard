@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Board">
+	<insert id="AddItem" parameterType="com.entaz.sample.model.Board"
+		statementType="CALLABLE">
+		{call
+		USP_ADD_BOARD(#{writer,mode=IN,jdbcType=VARCHAR},#{subject,mode=IN,jdbcType=VARCHAR},#{detail,mode=IN,jdbcType=VARCHAR})}
+	</insert>
+	<select id="GetItem" parameterType="int"
+		resultType="com.entaz.sample.model.Board" statementType="CALLABLE">
+		{call USP_GET_ITEM(#{id,mode=IN,jdbcType=NUMERIC})}
+	</select>
+	<select id="GetList" resultType="com.entaz.sample.model.Board">
+		SELECT * FROM Board
+		ORDER BY WriteTime DESC
+	</select>
+	<update id="UpdateItem" parameterType="com.entaz.sample.model.Board"
+		statementType="CALLABLE">
+		UPDATE Board
+		SET
+		Subject = #{subject}, Detail = #{detail}
+		WHERE
+		ID = #{id}
+	</update>
+	<update id="IncreaseCount" parameterType="int" statementType="CALLABLE">
+		{call USP_INCREASE_COUNT(#{id,mode=IN,jdbcType=INTEGER})}
+	</update>
+	<delete id="DeleteItem" parameterType="int" statementType="CALLABLE">
+		{call USP_DELETE_ITEM(#{id,mode=IN,jdbcType=INTEGER})}
+	</delete>
+</mapper>

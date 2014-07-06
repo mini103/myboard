@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+ <!-- Spring에서 사용하는 빈 설정이 위치하는 XML파일 -->
+ <context-param>
+  <param-name>contextConfigLocation</param-name>
+  <param-value>/WEB-INF/config/root-context.xml</param-value>
+ </context-param>
+
+ <listener>
+  <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+ </listener>
+  
+ <!-- 요청시 입력받는 파라미터의 한글처리를 위하여 인코딩을 UTF-8로 고정 -->
+ <filter>
+   <filter-name>encodingFilter</filter-name>
+  <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+  <init-param>
+   <param-name>encoding</param-name>
+   <param-value>UTF-8</param-value>
+  </init-param>
+ </filter>
+ <filter-mapping>
+  <filter-name>encodingFilter</filter-name>
+  <url-pattern>/-</url-pattern>
+ </filter-mapping>
+
+ <!-- 일반적인 정적인 파일은 Spring을 통하지 않도록 설정함. 추가적인 확장자가 필요하면 여기에 등록 -->
+ <servlet-mapping> 
+  <servlet-name>default</servlet-name> 
+  <url-pattern>*.js</url-pattern> 
+  <url-pattern>*.gif</url-pattern> 
+  <url-pattern>*.jpg</url-pattern> 
+  <url-pattern>*.png</url-pattern> 
+  <url-pattern>*.css</url-pattern> 
+  <url-pattern>*.ico</url-pattern> 
+ </servlet-mapping>
+
+ <!-- DispatcherServlet 설정. 위에서 설정한 확장자 이외에는 Spring의 DispatcherServlet을 통한다. -->
+ <servlet>
+  <servlet-name>appServlet</servlet-name>
+  <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+  <init-param>
+   <param-name>contextConfigLocation</param-name>
+   <param-value>/WEB-INF/config/servlet-context.xml</param-value>
+  </init-param>
+  <load-on-startup>1</load-on-startup>
+ </servlet>
+  
+ <servlet-mapping>
+  <servlet-name>appServlet</servlet-name>
+  <url-pattern>/</url-pattern>
+ </servlet-mapping>
+ 
+ <!-- 파일을 찾을 수 없을때의 설정 -->
+ <error-page>
+  <error-code>404</error-code>
+  <location>/errors/404</location>
+ </error-page>
+
+</web-app>

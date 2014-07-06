@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:beans="http://www.springframework.org/schema/beans"
+ xmlns:context="http://www.springframework.org/schema/context"
+ xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+ <!-- Spring MVC 애노테이션 설정을 활성화한다.(@Controller 등의) -->
+ <annotation-driven />
+
+ <!-- HTTP GET 요청에서 사용할 리소스내용을 위해서 /resources 디렉토리의 파일을 가져온다. -->
+ <resources mapping="/resources/-*" location="/resources/" />
+
+ <!-- Controller에서 반환하는 view 이름의 앞뒤에 jsp 경로를 연결해준다. -->
+ <beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+  <beans:property name="prefix" value="/WEB-INF/view/" />
+  <beans:property name="suffix" value=".jsp" />
+ </beans:bean> 
+ 
+ <!-- base 패키지로 설정된 패키지 이하에 포함된 @Controller등의 컴포넌트 클래스를 스캔해 자동 등록한다. -->
+ <context:component-scan base-package="com.mini103.bbs" />
+ 
+</beans:beans>
